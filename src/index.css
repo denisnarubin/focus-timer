@@ -1,6 +1,21 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 body {
   background-color: var(--color-slate-900);
   color: var(--color-slate-100);
+}
+
+
+@theme {
+
+  --animate-gradient-shift: gradient-shift 6s ease infinite;
+
+  @keyframes gradient-shift {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
 }
