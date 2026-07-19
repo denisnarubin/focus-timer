@@ -1,49 +1,68 @@
-name: CI Pipeline for Focus Timer
+name: CI/CD Pipeline for Focus Timer
 
-# 1. Триггеры: когда запускать робота?
 on:
   push:
-    branches: [ main ] # Запускать при пуше в ветку main
+    branches: [ main ]
   pull_request:
-    branches: [ main ] # Запускать при создании PR в ветку main
+    branches: [ main ]
 
-# 2. Перечень больших задач (Jobs)
 jobs:
-  # Задача №1: Проверка качества кода (Линтинг и TypeScript)
+  # ЭТАП CI: Проверка кода
   code-check:
-    runs-on: ubuntu-latest # Выделяем для робота виртуальную машину на Ubuntu
-
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4 # Шаг 1: Скачиваем твой код из репозитория на виртуалку
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4 # Шаг 2: Разворачиваем Node.js на виртуалке
+        uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: 'npm' # Автоматически кэшируем зависимости для ускорения
+          cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci # Шаг 3: Чистая установка пакетов
+        run: npm ci
 
       - name: Run TypeScript check
-        run: npm run build # Шаг 4: Запускаем сборку (включая tsc), чтобы поймать ошибки типов
+        run: npm run build
 
-  # Задача №2: Сборка Docker-образа (начнется только ЕСЛИ первая задача прошла успешно)
-  docker-build:
+  # ЭТАП CD: Сборка и отправка Docker-образа
+  docker-build-and-push:
     runs-on: ubuntu-latest
-    needs: code-check # Говорим: "Не собирай докер, если код упал на проверке типов!"
+    needs: code-check # Запускается только после успешного CI
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' # Пушим в облако ТОЛЬКО при реальном пуше в main
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3 # Настраиваем продвинутый сборщик Docker
+      # 1. Логинимся в Docker Hub с помощью сохраненных секретов
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build Docker Image
-        uses: docker/build-push-action@v5 # Собираем наш Dockerfile
+      # 2. Настраиваем сборщик
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 3. Генерируем правильные теги для контейнера (версию)
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/focus-timer
+          tags: |
+            type=raw,value=latest
+            type=sha,format=short
+
+      # 4. Собираем и отправляем (push: true) образ в Docker Hub
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile
-          push: false # На этапе CI мы просто тестируем сборку, никуда её пока не отправляем
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
