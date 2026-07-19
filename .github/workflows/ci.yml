@@ -20,7 +20,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4 # Шаг 2: Разворачиваем Node.js на виртуалке
         with:
-          node-version: 20
+          node-version: 24
           cache: 'npm' # Автоматически кэшируем зависимости для ускорения
 
       - name: Install dependencies
