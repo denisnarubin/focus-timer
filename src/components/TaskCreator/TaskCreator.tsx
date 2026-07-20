@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { db } from '../../db/index';
-import type { Task } from '../../db/schema';
+
+import { useTasks } from '../../hooks/useTasks';
 
 function TaskCreator() {
+
+  const { addTask } = useTasks();
   const [title, setTitle] = useState('');
   const [duration, setDuration] = useState('');
   const [category, setCategory] = useState('');
@@ -16,18 +18,16 @@ function TaskCreator() {
       return;
     }
 
-    const currentTimestamp = Date.now();
+
 
     try {
-      await db.tasks.add({
-        title: title.trim(),
-        category,
-        duration: allDay ? null : Number(duration) || 0,
-        allDay,
-        dueDate: dueDate || null,
-        isCompleted: false,
-        createdAt: currentTimestamp, 
-      } as Task);
+        await addTask(
+            title.trim(),
+            category,
+            allDay ? null : Number(duration) || 0,
+            allDay,
+            dueDate || null
+        );
 
 
       setTitle('');

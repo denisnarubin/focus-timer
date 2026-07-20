@@ -4,20 +4,29 @@ import { db } from '../db';
 export function useTasks() {
   const tasks = useLiveQuery(() => db.tasks.orderBy('createdAt').reverse().toArray(), []);
 
-  const addTask = async (title: string) => {
+  // Теперь функция принимает все параметры формы
+  const addTask = async (
+    title: string,
+    category: string,
+    duration: number | null,
+    allDay: boolean,
+    dueDate: string | null
+  ) => {
     if (!title.trim()) return;
 
     await db.tasks.add({
       title: title.trim(),
+      category,
+      duration,
+      allDay,
+      dueDate,
       isCompleted: false,
       createdAt: Date.now(),
     });
   };
 
   const toggleTask = async (id: number, currentStatus: boolean) => {
-    await db.tasks.update(id, {
-      isCompleted: !currentStatus,
-    });
+    await db.tasks.update(id, { isCompleted: !currentStatus });
   };
 
   const deleteTask = async (id: number) => {
