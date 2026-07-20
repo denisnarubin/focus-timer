@@ -9,7 +9,7 @@ class FocusTimerDatabase extends Dexie {
     super('FocusTimerDB');
 
     this.version(1).stores({
-      tasks: '++id, isCompleted, createAt',
+      tasks: '++id, category, dueDate, isCompleted, createdAt',
       history: '++id, taskId, completedAt',
     });
   }
