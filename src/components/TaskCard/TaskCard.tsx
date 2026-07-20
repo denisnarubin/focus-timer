@@ -1,4 +1,6 @@
-function TaskCard() {
+import type { TaskCardProps } from "../../db/schema"
+
+function TaskCard(tasks: TaskCardProps) {
   return (
     <section className="
       group relative flex items-center justify-between p-5 max-w-sm w-full mx-auto
@@ -23,10 +25,10 @@ function TaskCard() {
 
         <div className="flex flex-col gap-1.5">
           <span className="text-sm font-semibold text-white/90 tracking-wide">
-            Сделать интерфейс со стеклом
+            {tasks.title}
           </span>
           <span className="text-[10px] bg-white/[0.06] border border-white/10 text-slate-300 px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider w-fit">
-            Design
+            {tasks.category}
           </span>
         </div>
       </div>

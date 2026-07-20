@@ -1,9 +1,15 @@
 export interface Task {
-  id?: number;
+  id?: number; 
   title: string;
-  isCompleted: boolean;
-  createdAt: number;
+  category: string; 
+  duration: number | null; 
+  allDay: boolean;
+  dueDate: string | null;  
+  isCompleted: boolean;    
+  createdAt: number;       
 }
+
+export type TaskCardProps = Pick<Task, 'id' | 'title' | 'category'>; 
 
 export interface FocusSession {
   id?: number;
